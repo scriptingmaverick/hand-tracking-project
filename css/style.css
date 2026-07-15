@@ -24,6 +24,22 @@ canvas {
   transform: scaleX(-1);
 }
 
+.gesture-label {
+  position: absolute;
+  top: 16px; left: 50%; transform: translateX(-50%);
+  color: #fff;
+  font-size: 32px;
+  font-weight: bold;
+  background: rgba(0,0,0,0.65);
+  padding: 8px 24px;
+  border-radius: 12px;
+  pointer-events: none;
+  white-space: nowrap;
+  text-shadow: 0 0 12px rgba(0, 150, 255, 0.6);
+  display: none;
+  z-index: 10;
+}
+
 .status {
   position: absolute;
   bottom: 16px; left: 50%; transform: translateX(-50%);

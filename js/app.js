@@ -10,7 +10,38 @@ const CONNECTIONS = [
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const statusEl = document.getElementById('status');
+const gestureEl = document.getElementById('gesture');
 const ctx = canvas.getContext('2d');
+
+function dist(a, b) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function isExtended(lm, tip, pip) {
+  const wrist = lm[0];
+  return dist(lm[tip], wrist) > dist(lm[pip], wrist);
+}
+
+function getGesture(lm) {
+  const thumb = isExtended(lm, 4, 3);
+  const index = isExtended(lm, 8, 6);
+  const middle = isExtended(lm, 12, 10);
+  const ring = isExtended(lm, 16, 14);
+  const pinky = isExtended(lm, 20, 18);
+
+  const extended = [thumb, index, middle, ring, pinky];
+  const count = extended.filter(Boolean).length;
+
+  if (extended.every(f => f)) return { name: 'Open Palm', emoji: '✋', count };
+  if (extended.every(f => !f)) return { name: 'Fist', emoji: '✊', count };
+
+  if (!thumb && index && middle && !ring && !pinky) return { name: 'Peace', emoji: '✌️', count };
+  if (!thumb && index && !middle && !ring && !pinky) return { name: 'Pointing', emoji: '☝️', count };
+  if (thumb && !index && !middle && !ring && !pinky) return { name: 'Thumbs Up', emoji: '👍', count };
+  if (!thumb && index && !middle && !ring && pinky) return { name: 'Rock On', emoji: '🤘', count };
+
+  return { name: '', emoji: '', count };
+}
 
 function onResults(results) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -47,23 +78,18 @@ function onResults(results) {
         ctx.stroke();
       }
 
-      ctx.fillStyle = '#fff';
-      ctx.font = '12px monospace';
-      ctx.fillText(`Fingers: ${countFingers(landmarks)}`, 16, 24);
+      const gesture = getGesture(landmarks);
+      if (gesture.name) {
+        gestureEl.textContent = `${gesture.emoji} ${gesture.name}`;
+        gestureEl.style.display = 'block';
+      } else {
+        gestureEl.style.display = 'none';
+      }
     }
   } else {
     statusEl.textContent = 'No hands detected';
+    gestureEl.style.display = 'none';
   }
-}
-
-function countFingers(lm) {
-  const tips = [4, 8, 12, 16, 20];
-  const bases = [2, 5, 9, 13, 17];
-  let count = 0;
-  for (let i = 0; i < 5; i++) {
-    if (lm[tips[i]].y < lm[bases[i]].y) count++;
-  }
-  return count;
 }
 
 async function init() {
