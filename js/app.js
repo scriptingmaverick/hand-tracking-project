@@ -11,7 +11,11 @@ const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const statusEl = document.getElementById('status');
 const gestureEl = document.getElementById('gesture');
+const legendToggle = document.getElementById('legendToggle');
+const legend = document.getElementById('legend');
 const ctx = canvas.getContext('2d');
+
+legendToggle.addEventListener('click', () => legend.classList.toggle('open'));
 
 function dist(a, b) {
   return Math.hypot(a.x - b.x, a.y - b.y);
@@ -23,37 +27,48 @@ function isExtended(lm, tip, pip) {
 }
 
 function getGesture(lm) {
-  const thumb = isExtended(lm, 4, 3);
-  const index = isExtended(lm, 8, 6);
-  const middle = isExtended(lm, 12, 10);
-  const ring = isExtended(lm, 16, 14);
-  const pinky = isExtended(lm, 20, 18);
+  const thumbEx  = isExtended(lm, 4, 3);
+  const indexEx  = isExtended(lm, 8, 6);
+  const middleEx = isExtended(lm, 12, 10);
+  const ringEx   = isExtended(lm, 16, 14);
+  const pinkyEx  = isExtended(lm, 20, 18);
 
-  const extended = [thumb, index, middle, ring, pinky];
-  const count = extended.filter(Boolean).length;
+  const ext = [thumbEx, indexEx, middleEx, ringEx, pinkyEx];
+  const count = ext.filter(Boolean).length;
 
-  if (extended.every(f => f)) return { name: 'Open Palm', emoji: '✋', count };
-  if (extended.every(f => !f)) return { name: 'Fist', emoji: '✊', count };
+  const thumbIndexDist = dist(lm[4], lm[8]);
 
-  if (!thumb && index && middle && !ring && !pinky) return { name: 'Peace', emoji: '✌️', count };
-  if (!thumb && index && !middle && !ring && !pinky) return { name: 'Pointing', emoji: '☝️', count };
-  if (thumb && !index && !middle && !ring && !pinky) return { name: 'Thumbs Up', emoji: '👍', count };
-  if (!thumb && index && !middle && !ring && pinky) return { name: 'Rock On', emoji: '🤘', count };
+  if (thumbIndexDist < 0.05 && !indexEx && thumbEx) return { name: 'OK', emoji: '👌', count };
 
-  return { name: '', emoji: '', count };
+  if (ext.every(f => f)) return { name: 'Open Palm', emoji: '✋', count };
+  if (ext.every(f => !f)) return { name: 'Fist', emoji: '✊', count };
+
+  if (thumbEx && indexEx && !middleEx && !ringEx && pinkyEx) return { name: 'ILY', emoji: '🤟', count };
+  if (indexEx && !middleEx && !ringEx && pinkyEx && !thumbEx) return { name: 'Rock On', emoji: '🤘', count };
+  if (thumbEx && pinkyEx && !indexEx && !middleEx && !ringEx) return { name: 'Call Me', emoji: '🤙', count };
+  if (indexEx && middleEx && ringEx && !thumbEx && !pinkyEx) return { name: 'Three', emoji: '3️⃣', count };
+  if (indexEx && middleEx && !thumbEx && !ringEx && !pinkyEx) return { name: 'Peace', emoji: '✌️', count };
+
+  if (indexEx && middleEx && ringEx && pinkyEx && !thumbEx) return { name: 'Four', emoji: '4️⃣', count };
+
+  if (thumbEx && !indexEx && !middleEx && !ringEx && !pinkyEx) return { name: 'Thumbs Up', emoji: '👍', count };
+  if (indexEx && !thumbEx && !middleEx && !ringEx && !pinkyEx) return { name: 'Pointing', emoji: '☝️', count };
+
+  return null;
 }
 
 function onResults(results) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-    statusEl.textContent = `${results.multiHandLandmarks.length} hand(s) detected`;
+    const n = results.multiHandLandmarks.length;
+    statusEl.textContent = `${n} hand${n > 1 ? 's' : ''} detected`;
 
     for (const landmarks of results.multiHandLandmarks) {
       const w = canvas.width;
       const h = canvas.height;
 
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 2;
       ctx.lineCap = 'round';
 
       for (const [i, j] of CONNECTIONS) {
@@ -62,7 +77,7 @@ function onResults(results) {
         ctx.beginPath();
         ctx.moveTo(a.x * w, a.y * h);
         ctx.lineTo(b.x * w, b.y * h);
-        ctx.strokeStyle = '#42a5f5';
+        ctx.strokeStyle = 'rgba(66, 165, 245, 0.5)';
         ctx.stroke();
       }
 
@@ -70,25 +85,25 @@ function onResults(results) {
         const x = lm.x * w;
         const y = lm.y * h;
         ctx.beginPath();
-        ctx.arc(x, y, 6, 0, 2 * Math.PI);
-        ctx.fillStyle = '#ff4081';
+        ctx.arc(x, y, 4, 0, 2 * Math.PI);
+        ctx.fillStyle = 'rgba(255, 64, 129, 0.8)';
         ctx.fill();
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.lineWidth = 1.5;
         ctx.stroke();
       }
 
       const gesture = getGesture(landmarks);
-      if (gesture.name) {
-        gestureEl.textContent = `${gesture.emoji} ${gesture.name}`;
-        gestureEl.style.display = 'block';
+      if (gesture) {
+        gestureEl.textContent = `${gesture.emoji}  ${gesture.name}`;
+        gestureEl.classList.add('visible');
       } else {
-        gestureEl.style.display = 'none';
+        gestureEl.classList.remove('visible');
       }
     }
   } else {
     statusEl.textContent = 'No hands detected';
-    gestureEl.style.display = 'none';
+    gestureEl.classList.remove('visible');
   }
 }
 

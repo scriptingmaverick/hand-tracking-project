@@ -3,15 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hand Tracking - Gesture Recognition</title>
+  <title>Gesture — Hand Tracking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <div class="container">
-    <video id="video" autoplay playsinline></video>
-    <canvas id="canvas"></canvas>
+    <div class="viewport">
+      <video id="video" autoplay playsinline></video>
+      <canvas id="canvas"></canvas>
+    </div>
     <div class="gesture-label" id="gesture">—</div>
     <div class="status" id="status">Loading...</div>
+  </div>
+  <div class="legend" id="legend">
+    <span class="legend-toggle" id="legendToggle">⌘</span>
+    <div class="legend-content" id="legendContent">
+      <span>✋ Open Palm</span>
+      <span>✊ Fist</span>
+      <span>👌 OK</span>
+      <span>🤟 ILY</span>
+      <span>🤘 Rock On</span>
+      <span>✌️ Peace</span>
+      <span>🤙 Call Me</span>
+      <span>👍 Thumbs Up</span>
+      <span>☝️ Pointing</span>
+      <span>3️⃣ Three</span>
+      <span>4️⃣ Four</span>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/hands.js" crossorigin="anonymous"></script>
